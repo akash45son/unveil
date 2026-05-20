@@ -3,8 +3,8 @@ fastapi==0.111.0          # The web framework — handles HTTP requests/response
 uvicorn==0.29.0           # The server that *runs* FastAPI (like an engine for the car)
 
 # ── ML / Deep Learning ─────────────────────────────────────
-torch==2.3.0              # PyTorch — the deep learning framework your model uses
-torchvision==0.18.0       # Image transforms + pretrained model architectures (EfficientNet)
+torch==2.12.0             # PyTorch — the deep learning framework your model uses
+torchvision==0.17.0       # Image transforms + pretrained model architectures (EfficientNet)
 efficientnet-pytorch==0.7.1  # EfficientNet model class (makes loading your .pth easy)
 Pillow==10.3.0            # PIL — opens and manipulates images (JPEG, PNG, etc.)
 numpy==1.26.4             # Numerical arrays — PyTorch tensors ↔ numpy arrays
