@@ -1,0 +1,30 @@
+# ── Web Framework ──────────────────────────────────────────
+fastapi==0.111.0          # The web framework — handles HTTP requests/responses
+uvicorn==0.29.0           # The server that *runs* FastAPI (like an engine for the car)
+
+# ── ML / Deep Learning ─────────────────────────────────────
+torch==2.3.0              # PyTorch — the deep learning framework your model uses
+torchvision==0.18.0       # Image transforms + pretrained model architectures (EfficientNet)
+efficientnet-pytorch==0.7.1  # EfficientNet model class (makes loading your .pth easy)
+Pillow==10.3.0            # PIL — opens and manipulates images (JPEG, PNG, etc.)
+numpy==1.26.4             # Numerical arrays — PyTorch tensors ↔ numpy arrays
+opencv-python==4.9.0.80   # OpenCV — extracts frames from video files
+
+# ── Grad-CAM ───────────────────────────────────────────────
+grad-cam==1.5.0           # Generates heatmaps showing what the model "looked at"
+
+# ── Database ───────────────────────────────────────────────
+motor==3.4.0              # Async MongoDB driver (works perfectly with FastAPI)
+pymongo==4.7.2            # MongoDB toolkit (motor depends on this)
+
+# ── Authentication ─────────────────────────────────────────
+python-jose[cryptography]==3.3.0   # Creates and verifies JWT tokens
+passlib[bcrypt]==1.7.4             # Hashes passwords securely (bcrypt algorithm)
+bcrypt==3.2.0                      # Ensures compatibility with passlib
+
+# ── Utilities ──────────────────────────────────────────────
+python-multipart==0.0.9   # Lets FastAPI accept file uploads (images/videos)
+python-dotenv==1.0.1      # Reads your .env file (keeps secrets out of code)
+httpx==0.27.0             # Async HTTP client — used to download model.pth from GitHub
+aiofiles==23.2.1          # Async file reading/writing (pairs well with FastAPI)
+requests==2.31.0          # Simple HTTP requests (used in startup script)
