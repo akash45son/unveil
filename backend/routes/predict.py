@@ -3,18 +3,8 @@ import tempfile
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
-from typing import List
-
-import cv2
-import numpy as np
-import torch
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
-from PIL import Image
-
-from models.efficientnet import get_model
 from routes.auth import get_current_user
-from utils.gradcam import generate_gradcam
-from utils.preprocess import preprocess_image, preprocess_image_pil
 
 router = APIRouter()
 CLASS_LABELS = {0: "FAKE", 1: "REAL"}
@@ -27,7 +17,10 @@ def _get_db(request: Request):
     return db
 
 
-def _predict_from_tensor(model, tensor: torch.Tensor):
+def _predict_from_tensor(model, tensor):
+    import numpy as np
+    import torch
+
     with torch.no_grad():
         logits = model(tensor)
         probabilities = torch.softmax(logits, dim=1)[0].detach().cpu().numpy()
@@ -47,6 +40,10 @@ async def predict_image(
     file: UploadFile = File(...),
 ):
     db = _get_db(request)
+    from models.efficientnet import get_model
+    from utils.gradcam import generate_gradcam
+    from utils.preprocess import preprocess_image
+
     model = get_model()
     image_bytes = await file.read()
     if not image_bytes:
@@ -77,6 +74,14 @@ async def predict_video(
     file: UploadFile = File(...),
 ):
     db = _get_db(request)
+    import cv2
+    import numpy as np
+    from PIL import Image
+
+    from models.efficientnet import get_model
+    from utils.gradcam import generate_gradcam
+    from utils.preprocess import preprocess_image_pil
+
     model = get_model()
     suffix = Path(file.filename or "video.mp4").suffix or ".mp4"
     temp_path = None

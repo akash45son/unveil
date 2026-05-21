@@ -7,7 +7,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from models.efficientnet import MODEL_PATH, get_model
 from routes.auth import router as auth_router
 from routes.predict import router as predict_router
 
@@ -51,18 +50,11 @@ async def _download_model_if_needed() -> None:
 
 @app.on_event("startup")
 async def startup_event():
-    await _download_model_if_needed()
-    get_model()
-    app.state.model_loaded = True
-
     mongo_uri = os.getenv("MONGODB_URI")
-    if not mongo_uri:
-        raise RuntimeError("MONGODB_URI is not configured")
-
-    client = AsyncIOMotorClient(mongo_uri)
-    await client.admin.command("ping")
-    app.state.mongo_client = client
-    app.state.db = client["unveil"]
+    if mongo_uri:
+        client = AsyncIOMotorClient(mongo_uri)
+        app.state.mongo_client = client
+        app.state.db = client["unveil"]
 
 
 @app.on_event("shutdown")
