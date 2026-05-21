@@ -1,5 +1,6 @@
 import os
 import tempfile
+import time
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
@@ -44,14 +45,30 @@ async def predict_image(
     from utils.gradcam import generate_gradcam
     from utils.preprocess import preprocess_image
 
+    started_at = time.perf_counter()
+    print(f"[predict_image] start filename={file.filename!r} size={getattr(file, 'size', None)}")
+
+    step_started = time.perf_counter()
     model = get_model()
+    print(f"[predict_image] model_ready elapsed={time.perf_counter() - step_started:.2f}s")
+
+    step_started = time.perf_counter()
     image_bytes = await file.read()
     if not image_bytes:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Empty image file")
+    print(f"[predict_image] file_read bytes={len(image_bytes)} elapsed={time.perf_counter() - step_started:.2f}s")
 
+    step_started = time.perf_counter()
     tensor = preprocess_image(image_bytes)
+    print(f"[predict_image] preprocess_done elapsed={time.perf_counter() - step_started:.2f}s")
+
+    step_started = time.perf_counter()
     label, confidence, _, _, _ = _predict_from_tensor(model, tensor)
+    print(f"[predict_image] prediction_done label={label} confidence={confidence:.2f} elapsed={time.perf_counter() - step_started:.2f}s")
+
+    step_started = time.perf_counter()
     heatmap = generate_gradcam(model, tensor, image_bytes)
+    print(f"[predict_image] gradcam_done has_heatmap={bool(heatmap)} elapsed={time.perf_counter() - step_started:.2f}s")
 
     prediction = {
         "user_id": current_user["id"],
@@ -62,7 +79,9 @@ async def predict_image(
         "file_type": "image",
         "created_at": datetime.utcnow(),
     }
+    step_started = time.perf_counter()
     await db["predictions"].insert_one(prediction)
+    print(f"[predict_image] db_insert_done elapsed={time.perf_counter() - step_started:.2f}s total={time.perf_counter() - started_at:.2f}s")
 
     return {"label": label, "confidence": round(confidence, 2), "heatmap": heatmap}
 

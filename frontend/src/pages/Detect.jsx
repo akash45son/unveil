@@ -87,14 +87,18 @@ export default function Detect() {
     setError('');
     setResult(null);
 
+    let requestUrl = '';
     try {
       const formData = new FormData();
       formData.append('file', selectedFile);
 
       const endpoint = mode === 'image' ? '/predict/image' : '/predict/video';
-      const response = await api.post(endpoint, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      // build readable URL for logging (don't rely on it for requests)
+      requestUrl = `${api.defaults.baseURL?.replace(/\/$/, '') || ''}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
+      console.log('Uploading file to', requestUrl, { name: selectedFile.name, size: selectedFile.size });
+
+      // Let axios set the multipart Content-Type (including boundary)
+      const response = await api.post(endpoint, formData);
 
       setResult({
         ...response.data,
@@ -103,12 +107,23 @@ export default function Detect() {
         filename: selectedFile.name,
       });
     } catch (requestError) {
+      // Detailed logging to help debug server responses
+      console.error('Detection error', {
+        url: requestUrl,
+        error: requestError,
+        response: requestError?.response,
+        status: requestError?.response?.status,
+        data: requestError?.response?.data,
+      });
+
       if (requestError?.response?.status === 401) {
         localStorage.removeItem('token');
         window.location.href = '/login';
         return;
       }
-      setError(requestError?.response?.data?.detail || 'Detection failed. Try another file.');
+
+      const backendMessage = requestError?.response?.data?.detail || requestError?.response?.data?.message || requestError?.message;
+      setError(backendMessage || 'Detection failed. Try another file.');
     } finally {
       setLoading(false);
     }
